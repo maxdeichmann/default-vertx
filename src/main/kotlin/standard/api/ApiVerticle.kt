@@ -5,6 +5,7 @@ import io.vertx.core.Future
 import io.vertx.core.json.JsonArray
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
+import io.vertx.micrometer.PrometheusScrapingHandler
 import mu.KotlinLogging
 import standard.dto.SearchDto
 import standard.model.Portfolio
@@ -24,6 +25,10 @@ class ApiVerticle(
         val server = vertx.createHttpServer()
         val router = Router.router(vertx)
         router.get("/test").handler(::handleTest)
+
+
+        router.route("/metrics").handler(PrometheusScrapingHandler.create())
+
 
         server.requestHandler(router)
 

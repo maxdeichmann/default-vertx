@@ -4,6 +4,10 @@
 package standard
 
 import io.vertx.core.Vertx
+import io.vertx.core.VertxOptions
+import io.vertx.core.http.HttpServerOptions
+import io.vertx.core.metrics.MetricsOptions
+import io.vertx.micrometer.*
 import standard.api.ApiVerticle
 import standard.persistence.PersistenceServiceImpl
 import standard.persistence.PersistenceServiceVertxEBProxy
@@ -15,7 +19,21 @@ class App {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            var vertx = Vertx.vertx()
+
+            val vertx = Vertx.vertx(VertxOptions().setMetricsOptions(
+                    MicrometerMetricsOptions()
+                            // https://github.com/vert-x3/vertx-micrometer-metrics/issues/38
+                            .addLabelMatch(Match()
+                                    .setDomain(MetricsDomain.EVENT_BUS)
+                                    .setType(MatchType.REGEX)
+                                    .setLabel("address")
+                                    .setValue("^\\d+$")
+                                    .setAlias("reply-address"))
+                            .setPrometheusOptions(VertxPrometheusOptions().setEnabled(true)
+                                    .setStartEmbeddedServer(true)
+                                    .setEmbeddedServerOptions(HttpServerOptions().setPort(8081)))
+                            .setEnabled(true)
+                            .addDisabledMetricsCategory(MetricsDomain.NAMED_POOLS)))
 
             vertx.deployVerticle(PersistenceVerticle())
             vertx.deployVerticle(ApiVerticle(PersistenceServiceVertxEBProxy(vertx, "standard.persistence-service")))

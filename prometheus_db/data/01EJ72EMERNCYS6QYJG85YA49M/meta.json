@@ -1,0 +1,17 @@
+{
+	"ulid": "01EJ72EMERNCYS6QYJG85YA49M",
+	"minTime": 1600066341714,
+	"maxTime": 1600070400000,
+	"stats": {
+		"numSamples": 3245,
+		"numSeries": 20,
+		"numChunks": 35
+	},
+	"compaction": {
+		"level": 1,
+		"sources": [
+			"01EJ72EMERNCYS6QYJG85YA49M"
+		]
+	},
+	"version": 1
+}
