@@ -6,12 +6,15 @@ package standard
 import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
 import io.vertx.core.http.HttpServerOptions
-import io.vertx.core.metrics.MetricsOptions
 import io.vertx.micrometer.*
 import standard.api.ApiVerticle
-import standard.persistence.PersistenceServiceImpl
+import standard.codec.GenericCodec
+import standard.dto.SearchDto
+import standard.model.Portfolio
+import standard.model.Trade
 import standard.persistence.PersistenceServiceVertxEBProxy
 import standard.persistence.PersistenceVerticle
+
 
 class App {
 
@@ -34,6 +37,11 @@ class App {
                                     .setEmbeddedServerOptions(HttpServerOptions().setPort(8081)))
                             .setEnabled(true)
                             .addDisabledMetricsCategory(MetricsDomain.NAMED_POOLS)))
+
+            vertx.eventBus().registerDefaultCodec(SearchDto::class.java, GenericCodec(SearchDto::class.java))
+            vertx.eventBus().registerDefaultCodec(Trade::class.java, GenericCodec(Trade::class.java))
+            vertx.eventBus().registerDefaultCodec(Portfolio::class.java, GenericCodec(Portfolio::class.java))
+            vertx.eventBus().registerDefaultCodec(ArrayList::class.java, GenericCodec(ArrayList::class.java))
 
             vertx.deployVerticle(PersistenceVerticle())
             vertx.deployVerticle(ApiVerticle(PersistenceServiceVertxEBProxy(vertx, "standard.persistence-service")))

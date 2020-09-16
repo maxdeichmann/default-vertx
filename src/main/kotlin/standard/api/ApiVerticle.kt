@@ -2,9 +2,12 @@ package standard.api
 
 import io.vertx.core.AbstractVerticle
 import io.vertx.core.Future
+import io.vertx.core.Handler
+import io.vertx.core.eventbus.DeliveryOptions
 import io.vertx.core.json.JsonArray
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
+import io.vertx.kotlin.core.json.JsonArray
 import io.vertx.micrometer.PrometheusScrapingHandler
 import mu.KotlinLogging
 import standard.dto.SearchDto
@@ -44,17 +47,17 @@ class ApiVerticle(
     }
 
     private fun handleTest(ctx: RoutingContext) {
-        val future = Future.future<List<Portfolio>>()
-        persistenceService.getPortfolio(SearchDto(UUID.randomUUID(), UUID.randomUUID(), "string"), future)
 
-        future.setHandler { arPortfolios ->
+        val searchDto = SearchDto(UUID.randomUUID(), UUID.randomUUID(), "string")
+
+        vertx.eventBus().send<List<Portfolio>>("portfolio", searchDto, DeliveryOptions().setCodecName("SearchDtoCodec"), Handler { arPortfolios ->
             if (arPortfolios.succeeded()) {
-                val array = arPortfolios.result().map { it.toJson() }
+                val array = arPortfolios.result().body().map { it.toJson() }
                 val res: JsonArray = JsonArray(array)
                 ctx.response().end(res.toString())
             } else {
                 ctx.response().setStatusCode(500).end(arPortfolios.cause().message)
             }
-        }
+        })
     }
 }
