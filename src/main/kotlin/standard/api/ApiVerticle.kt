@@ -9,6 +9,7 @@ import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.core.json.JsonArray
 import io.vertx.micrometer.PrometheusScrapingHandler
+import io.vertx.micrometer.backends.BackendRegistries
 import mu.KotlinLogging
 import standard.dto.SearchDto
 import standard.model.Portfolio
@@ -27,11 +28,12 @@ class ApiVerticle(
 
         val server = vertx.createHttpServer()
         val router = Router.router(vertx)
-        router.get("/test").handler(::handleTest)
 
+        val metricsHandler = MetricsHandler(BackendRegistries.getDefaultNow())
 
-        router.route("/metrics").handler(PrometheusScrapingHandler.create())
-
+        router.get("/test")
+                .handler(metricsHandler)
+                .handler(::handleTest)
 
         server.requestHandler(router)
 

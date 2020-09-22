@@ -3,8 +3,10 @@
  */
 package standard
 
+import io.vertx.core.DeploymentOptions
 import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
+import io.vertx.core.eventbus.DeliveryOptions
 import io.vertx.core.http.HttpServerOptions
 import io.vertx.micrometer.*
 import standard.api.ApiVerticle
@@ -43,7 +45,9 @@ class App {
             vertx.eventBus().registerDefaultCodec(Portfolio::class.java, GenericCodec(Portfolio::class.java))
             vertx.eventBus().registerDefaultCodec(ArrayList::class.java, GenericCodec(ArrayList::class.java))
 
-            vertx.deployVerticle(PersistenceVerticle())
+            val deliveryOptions = DeploymentOptions()
+
+            vertx.deployVerticle(PersistenceVerticle(), deliveryOptions)
             vertx.deployVerticle(ApiVerticle(PersistenceServiceVertxEBProxy(vertx, "standard.persistence-service")))
 
         }
